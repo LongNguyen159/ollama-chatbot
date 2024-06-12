@@ -1,6 +1,33 @@
 <router-outlet />
-<form class="example-form">
-    <mat-form-field class="example-full-width" appearance="outline" class="p-4">
-      <input matInput placeholder="How may I help you today?">
-    </mat-form-field>
-</form>
+<div class="flex flex-col h-full w-full justify-between overflow-hidden">
+  <!-- TOOLBAR SECTION -->
+  <div>
+
+    <mat-toolbar class="flex flex-row items-center justify-end">
+      <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+        <span class="material-symbols-outlined">
+          edit
+        </span>
+      </button>
+    </mat-toolbar>
+  </div>
+
+  <!-- MESSAGES SECTION -->
+  <div class="overflow-auto">
+    <mat-card *ngFor="let item of items" class="p-2 m-3">
+      <mat-card-header>
+        <mat-card-title>Alex</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>This is a lengthy message to simulate a real chat between a person and a chatbot</mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- INPUT SECTION -->
+  <div class="input-section flex flex-row w-full p-4">
+    <form class="example-form" class="w-full">
+      <mat-form-field class="example-full-width" class="w-full">
+        <input matInput placeholder="How may I help you today?">
+      </mat-form-field>
+  </form>
+  </div>
+</div>
