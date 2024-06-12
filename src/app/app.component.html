@@ -4,7 +4,7 @@
   <div>
 
     <mat-toolbar class="flex flex-row items-center justify-end">
-      <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon">
+      <button mat-icon-button class="example-icon" (click)="onNewChat()">
         <span class="material-symbols-outlined">
           edit
         </span>
@@ -13,21 +13,21 @@
   </div>
 
   <!-- MESSAGES SECTION -->
-  <div class="overflow-auto">
-    <mat-card *ngFor="let item of items" class="p-2 m-3">
+  <div class="overflow-auto h-full" #messagesContainer>
+    <mat-card *ngFor="let message of sentMessages" class="p-2 m-3">
       <mat-card-header>
-        <mat-card-title>Alex</mat-card-title>
+        <mat-card-title>You</mat-card-title>
       </mat-card-header>
-      <mat-card-content>This is a lengthy message to simulate a real chat between a person and a chatbot</mat-card-content>
+      <mat-card-content>{{ message }}</mat-card-content>
     </mat-card>
   </div>
 
   <!-- INPUT SECTION -->
   <div class="input-section flex flex-row w-full p-4">
-    <form class="example-form" class="w-full">
-      <mat-form-field class="example-full-width" class="w-full">
-        <input matInput placeholder="How may I help you today?">
+    <form class="example-form w-full" (ngSubmit)="onSubmit()">
+      <mat-form-field class="example-full-width w-full">
+        <input matInput placeholder="How may I help you today?" [(ngModel)]="userInput" [ngModelOptions]="{standalone: true}" (keypress.enter)="onSubmit()">
       </mat-form-field>
-  </form>
+    </form>
   </div>
 </div>
