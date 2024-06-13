@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {MatInputModule} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,9 @@ import {MatCardModule} from '@angular/material/card';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDividerModule} from '@angular/material/divider';
+import { ChatbotService } from './chatbot.service';
+import { take } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export interface Message {
   sender: string;
@@ -23,6 +26,7 @@ export interface Message {
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements AfterViewChecked {
+  chatbotService = inject(ChatbotService)
   @ViewChild('messagesContainer') private messagesContainer: ElementRef;
   title = 'ollama-chatbot';
 
@@ -55,19 +59,25 @@ export class AppComponent implements AfterViewChecked {
      * Set it back to false after the response ended.
     */
     this.isInputDisabled = true;
-    // this.messageBuffer.push({
-    //   sender: this.botName,
-    //   content: 'I am a bot. I am responding to your message. Please wait...'
-    // })
-    setTimeout(() => {
-      this.messageBuffer.push({
-        sender: this.botName,
-        content: 'I am up and available! Ask me anything!'
-      })
-      this.isInputDisabled = false;
-    }, 500);
+    this.chatbotService.getBotResponse(this.userInput).pipe(take(1)).subscribe({
+      next: (response: any) => {
+        console.log('Response:', response);
+        this.messageBuffer.push({
+          sender: this.botName,
+          content: response.message
+        })
+        this.isInputDisabled = false;
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error:', err);
+        this.messageBuffer.push({
+          sender: this.botName,
+          content: 'Server Error. Please try again later.'
+        })
+        this.isInputDisabled = false;
+      }
+    })
     
-
     this.userInput = ''; // Clear the user input after processing
   }
 
