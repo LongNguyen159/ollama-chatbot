@@ -8,6 +8,11 @@ import {MatCardModule} from '@angular/material/card';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDividerModule} from '@angular/material/divider';
+
+export interface Message {
+  sender: string;
+  content: string;
+}
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -20,12 +25,15 @@ import {MatDividerModule} from '@angular/material/divider';
 export class AppComponent implements AfterViewChecked {
   @ViewChild('messagesContainer') private messagesContainer: ElementRef;
   title = 'ollama-chatbot';
-  items = Array.from({ length: 50 }, (_, i) => i + 1); // Create an array of numbers from 1 to 50
+
   yourName = 'You'
   botName = 'Ollama'
-  userInput: string = '';
 
-  sentMessages: string[] = [];
+  userInput: string = '';
+  isInputDisabled: boolean = false;
+
+  messageBuffer: Message[] = [];
+
   constructor() {}
 
   ngAfterViewChecked() {
@@ -33,9 +41,31 @@ export class AppComponent implements AfterViewChecked {
   }
 
   onSubmit() {
-    console.log('User input:', this.userInput)
+    if (!this.userInput || this.isInputDisabled) return;
     /** Send POST to API here. */
-    this.sentMessages.push(this.userInput);
+    this.messageBuffer.push({
+      sender: this.yourName,
+      content: this.userInput
+    })
+
+    /** If we receive a response, push them into message buffer here.
+     * Set the isInputDisabled to true while waiting for the response
+     * and while the bot is responding.
+     * 
+     * Set it back to false after the response ended.
+    */
+    this.isInputDisabled = true;
+    // this.messageBuffer.push({
+    //   sender: this.botName,
+    //   content: 'I am a bot. I am responding to your message. Please wait...'
+    // })
+    setTimeout(() => {
+      this.messageBuffer.push({
+        sender: this.botName,
+        content: 'I am up and available! Ask me anything!'
+      })
+      this.isInputDisabled = false;
+    }, 500);
     
 
     this.userInput = ''; // Clear the user input after processing
@@ -50,7 +80,7 @@ export class AppComponent implements AfterViewChecked {
   }
 
   onNewChat() {
-    this.sentMessages = [];
+    this.messageBuffer = [];
     this.userInput = '';
   }
 

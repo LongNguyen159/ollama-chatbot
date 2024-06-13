@@ -4,7 +4,7 @@
   <div>
 
     <mat-toolbar class="flex flex-row items-center justify-end">
-      <button mat-icon-button class="example-icon" (click)="onNewChat()">
+      <button mat-icon-button class="example-icon" (click)="onNewChat()" [disabled]="isInputDisabled">
         <span class="material-symbols-outlined">
           edit
         </span>
@@ -14,19 +14,25 @@
 
   <!-- MESSAGES SECTION -->
   <div class="overflow-auto h-full" #messagesContainer>
-    <mat-card *ngFor="let message of sentMessages" class="p-2 m-3">
-      <mat-card-header>
-        <mat-card-title>You</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>{{ message }}</mat-card-content>
-    </mat-card>
+    <div *ngFor="let message of messageBuffer" [ngClass]="{'humanMessageWrapper': message.sender === yourName}">
+      <mat-card
+        class="p-2 m-3"
+        [ngClass]="{'humanSender': message.sender === yourName}"
+      >
+        <mat-card-header>
+          <mat-card-title>{{ message.sender }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>{{ message.content }}</mat-card-content>
+      </mat-card>
+    </div>
+    
   </div>
 
   <!-- INPUT SECTION -->
   <div class="input-section flex flex-row w-full p-4">
     <form class="example-form w-full" (ngSubmit)="onSubmit()">
       <mat-form-field class="example-full-width w-full">
-        <input matInput placeholder="How may I help you today?" [(ngModel)]="userInput" [ngModelOptions]="{standalone: true}" (keypress.enter)="onSubmit()">
+        <input matInput placeholder="How may I help you today?" [(ngModel)]="userInput" [ngModelOptions]="{standalone: true}" (keypress.enter)="onSubmit()" [disabled]="isInputDisabled">
       </mat-form-field>
     </form>
   </div>
