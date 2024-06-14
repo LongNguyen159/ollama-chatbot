@@ -11,6 +11,7 @@ import {MatDividerModule} from '@angular/material/divider';
 import { ChatbotService } from './chatbot.service';
 import { take } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import {MatButtonModule} from '@angular/material/button';
 
 export interface Message {
   sender: string;
@@ -20,7 +21,8 @@ export interface Message {
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, MatInputModule, FormsModule, MatFormFieldModule, CommonModule,
-    MatCardModule, MatToolbarModule, MatIconModule, MatDividerModule
+    MatCardModule, MatToolbarModule, MatIconModule, MatDividerModule,
+    MatButtonModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -28,10 +30,12 @@ export interface Message {
 export class AppComponent implements AfterViewChecked {
   chatbotService = inject(ChatbotService)
   @ViewChild('messagesContainer') private messagesContainer: ElementRef;
+  @ViewChild('userInputField') userInputField: ElementRef;
+
   title = 'ollama-chatbot';
 
-  yourName = 'You'
-  botName = 'Ollama'
+  yourName = 'Me'
+  botName = 'Bot-1.0'
 
   userInput: string = '';
   isInputDisabled: boolean = false;
@@ -42,6 +46,7 @@ export class AppComponent implements AfterViewChecked {
 
   ngAfterViewChecked() {
     this.scrollToBottom();
+    this.setFocus()
   }
 
   onSubmit() {
@@ -61,11 +66,11 @@ export class AppComponent implements AfterViewChecked {
     this.isInputDisabled = true;
     this.chatbotService.getBotResponse(this.userInput).pipe(take(1)).subscribe({
       next: (response: any) => {
-        console.log('Response:', response);
         this.messageBuffer.push({
           sender: this.botName,
           content: response.message
         })
+        this.setFocus();
         this.isInputDisabled = false;
       },
       error: (err: HttpErrorResponse) => {
@@ -74,11 +79,18 @@ export class AppComponent implements AfterViewChecked {
           sender: this.botName,
           content: 'Server Error. Please try again later.'
         })
+        this.setFocus();
         this.isInputDisabled = false;
       }
     })
     
     this.userInput = ''; // Clear the user input after processing
+  }
+
+  setFocus() {
+    setTimeout(() => {
+      this.userInputField.nativeElement.focus();
+    }, 0);
   }
 
   scrollToBottom(): void {
@@ -92,6 +104,7 @@ export class AppComponent implements AfterViewChecked {
   onNewChat() {
     this.messageBuffer = [];
     this.userInput = '';
+    this.setFocus();
   }
 
 }
