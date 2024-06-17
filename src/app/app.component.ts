@@ -41,8 +41,8 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
 
   title = 'ollama-chatbot';
 
-  yourName = 'user'
-  botName = 'assistant'
+  yourName = 'You'
+  botName = 'Dreamy IT'
 
   userInput: string = '';
   isInputDisabled: boolean = false;
@@ -65,7 +65,7 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
     this.isInputDisabled = true;
     /** Send POST to API here. */
     this.messageBuffer.push({
-      role: this.yourName,
+      role: 'user',
       content: this.userInput
     })
 
@@ -89,7 +89,7 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
         /** Stream completed: */
         this.isInputDisabled = false;
         this.messageBuffer.push({ 
-          role: this.botName,
+          role: 'assistant',
           content: this.streamMessage
         })
         this.streamMessage = ''
