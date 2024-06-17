@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, ViewChild, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import {MatInputModule} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
@@ -9,14 +9,21 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatIconModule} from '@angular/material/icon';
 import {MatDividerModule} from '@angular/material/divider';
 import { ChatbotService } from './chatbot.service';
-import { take } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Subject } from 'rxjs';
 import {MatButtonModule} from '@angular/material/button';
 
 export interface Message {
-  sender: string;
+  role: string;
   content: string;
 }
+
+export interface Response {
+  model: string;
+  created_at: string;
+  message: Message;
+  done: boolean;
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -27,64 +34,68 @@ export interface Message {
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent implements AfterViewChecked {
+export class AppComponent implements AfterViewChecked, OnDestroy {
   chatbotService = inject(ChatbotService)
   @ViewChild('messagesContainer') private messagesContainer: ElementRef;
   @ViewChild('userInputField') userInputField: ElementRef;
 
   title = 'ollama-chatbot';
 
-  yourName = 'Me'
-  botName = 'Bot-1.0'
+  yourName = 'user'
+  botName = 'assistant'
 
   userInput: string = '';
   isInputDisabled: boolean = false;
+  isMessageStreaming: boolean = false
 
   messageBuffer: Message[] = [];
+  componentDestroyed$: Subject<void> = new Subject();
+  streamMessage: string = '';
 
   constructor() {}
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    // this.scrollToBottom();
     this.setFocus()
   }
 
   onSubmit() {
-    if (!this.userInput || this.isInputDisabled) return;
+    if (this.userInput.trim() === "" || this.isInputDisabled) return;
+
+    this.isInputDisabled = true;
     /** Send POST to API here. */
     this.messageBuffer.push({
-      sender: this.yourName,
+      role: this.yourName,
       content: this.userInput
     })
 
-    /** If we receive a response, push them into message buffer here.
-     * Set the isInputDisabled to true while waiting for the response
-     * and while the bot is responding.
-     * 
-     * Set it back to false after the response ended.
-    */
-    this.isInputDisabled = true;
-    this.chatbotService.getBotResponse(this.userInput).pipe(take(1)).subscribe({
-      next: (response: any) => {
-        this.messageBuffer.push({
-          sender: this.botName,
-          content: response.message
-        })
-        this.setFocus();
-        this.isInputDisabled = false;
-      },
-      error: (err: HttpErrorResponse) => {
-        console.error('Error:', err);
-        this.messageBuffer.push({
-          sender: this.botName,
-          content: 'Server Error. Please try again later.'
-        })
-        this.setFocus();
-        this.isInputDisabled = false;
-      }
-    })
-    
+    this.getStreamResponse()
     this.userInput = ''; // Clear the user input after processing
+    this.scrollToBottom();
+  }
+
+  getStreamResponse() {
+    this.chatbotService.getStreamResponse(this.messageBuffer).subscribe({
+      next: (response: Response) => {
+        console.log('Stream response:', response)
+        /** Disable Input while streaming, and display stream messag */
+        this.isInputDisabled = true
+        this.streamMessage += response.message.content;
+        this.isMessageStreaming = response.done
+        this.scrollToBottom()
+      },
+      error: (error) => console.error('Error: ', error),
+      complete: () => {
+        /** Stream completed: */
+        this.isInputDisabled = false;
+        this.messageBuffer.push({ 
+          role: this.botName,
+          content: this.streamMessage
+        })
+        this.streamMessage = ''
+        this.scrollToBottom()
+      }
+    });
   }
 
   setFocus() {
@@ -105,6 +116,13 @@ export class AppComponent implements AfterViewChecked {
     this.messageBuffer = [];
     this.userInput = '';
     this.setFocus();
+  }
+
+
+  ngOnDestroy(): void {
+    this.componentDestroyed$.next();
+    this.componentDestroyed$.unsubscribe();
+    this.componentDestroyed$.complete();
   }
 
 }
