@@ -24,7 +24,10 @@
         [ngClass]="{'humanSender': message.role === 'user'}"
       >
         <mat-card-header>
-          <mat-card-title>{{ message.role == 'user' ? yourName : botName }}</mat-card-title>
+          <div class="flex flex-row w-full gap-2 items-center">
+            <img *ngIf="message.role == 'assistant'" style="height: 25px;" src="../assets/images/dreamyIT.png"/>
+            <mat-card-title>{{ message.role == 'user' ? yourName : botName }}</mat-card-title>
+          </div>
         </mat-card-header>
         <mat-card-content>{{ message.content }}</mat-card-content>
       </mat-card>
@@ -34,7 +37,10 @@
     <div *ngIf="isInputDisabled" class="botMessageWrapper">
       <mat-card class="p-2 m-3 botSender">
         <mat-card-header>
-          <mat-card-title>{{ botName }}</mat-card-title>
+          <div class="flex flex-row w-full gap-2 items-center">
+            <img style="height: 25px;" src="../assets/images/dreamyIT.png"/>
+            <mat-card-title>{{ botName }}</mat-card-title>
+          </div>
         </mat-card-header>
         <mat-card-content>
           {{ streamMessage }}
