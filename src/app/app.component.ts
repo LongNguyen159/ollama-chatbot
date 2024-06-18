@@ -77,7 +77,6 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
   getStreamResponse() {
     this.chatbotService.getStreamResponse(this.messageBuffer).subscribe({
       next: (response: Response) => {
-        console.log('Stream response:', response)
         /** Disable Input while streaming, and display stream messag */
         this.streamMessage += response.message.content;
         this.isMessageStreaming = response.done
