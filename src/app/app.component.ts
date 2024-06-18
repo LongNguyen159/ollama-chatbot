@@ -51,6 +51,7 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
   messageBuffer: Message[] = [];
   componentDestroyed$: Subject<void> = new Subject();
   streamMessage: string = '';
+  showLoading: boolean = false;
 
   constructor() {}
 
@@ -75,14 +76,19 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
   }
 
   getStreamResponse() {
+    this.showLoading = true;
     this.chatbotService.getStreamResponse(this.messageBuffer).subscribe({
       next: (response: Response) => {
+        this.showLoading = false;
         /** Disable Input while streaming, and display stream messag */
         this.streamMessage += response.message.content;
         this.isMessageStreaming = response.done
         this.scrollToBottom()
       },
-      error: (error) => console.error('Error: ', error),
+      error: (error) => {
+        this.showLoading = false;
+        console.error('Error:', error);
+      },
       complete: () => {
         /** Stream completed: */
         this.isInputDisabled = false;
