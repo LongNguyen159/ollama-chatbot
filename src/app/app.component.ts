@@ -79,7 +79,6 @@ export class AppComponent implements AfterViewChecked, OnDestroy {
       next: (response: Response) => {
         console.log('Stream response:', response)
         /** Disable Input while streaming, and display stream messag */
-        this.isInputDisabled = true
         this.streamMessage += response.message.content;
         this.isMessageStreaming = response.done
         this.scrollToBottom()
